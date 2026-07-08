@@ -12,6 +12,8 @@ const navItems = [
   { href: "/", label: "대시보드" },
   { href: "/projects", label: "프로젝트" },
   { href: "/certifications", label: "자격·교육" },
+  { href: "/export", label: "출력" },
+  { href: "/settings", label: "설정" },
 ];
 
 export default function RootLayout({
@@ -22,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900">
-        <header className="border-b border-zinc-200 bg-white">
+        <header className="border-b border-zinc-200 bg-white print:hidden">
           <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-3">
             <Link href="/" className="font-semibold">
               경력 관리

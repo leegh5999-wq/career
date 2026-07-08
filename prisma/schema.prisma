@@ -85,6 +85,17 @@ model Achievement {
   updatedAt   DateTime            @updatedAt
 }
 
+// 프로필 — 출력물(경력기술서 등) 상단에 들어갈 기본 정보. 단일 행("main")만 사용
+model Profile {
+  id        String   @id @default("main")
+  name      String // 이름
+  jobTitle  String? // 직함·직무 (전기설계 엔지니어 등)
+  email     String?
+  phone     String?
+  summary   String? // 한 줄 소개·경력 요약
+  updatedAt DateTime @updatedAt
+}
+
 // 자격·교육 이력 — 기술등급 산정과 공식 증빙에 사용
 model Certification {
   id         String            @id @default(cuid())
