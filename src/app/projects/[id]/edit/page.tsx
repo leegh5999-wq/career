@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { deleteProject, updateProject } from "../../actions";
 import { ProjectForm } from "../../project-form";
 import { ConfirmButton } from "@/components/confirm-button";
+import { btnDangerCls } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function EditProjectPage({
         <ConfirmButton
           action={deleteProject.bind(null, id)}
           message="정말 삭제할까요? 이 프로젝트의 성과 기록도 함께 삭제됩니다."
-          className="rounded-md border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          className={btnDangerCls}
         >
           프로젝트 삭제
         </ConfirmButton>

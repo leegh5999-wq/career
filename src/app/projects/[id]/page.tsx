@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { designScopeLabels, projectStatusLabels } from "@/lib/labels";
 import { formatDate } from "@/lib/format";
+import { chipCls } from "@/lib/ui";
 import { AchievementForm } from "@/components/achievement-form";
 import { AchievementList } from "@/components/achievement-list";
 
@@ -96,10 +97,7 @@ export default async function ProjectDetailPage({
           {project.designScopes.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {project.designScopes.map((s) => (
-                <span
-                  key={s}
-                  className="rounded bg-zinc-100 px-2 py-1 text-xs text-zinc-700"
-                >
+                <span key={s} className={chipCls}>
                   {designScopeLabels[s]}
                 </span>
               ))}

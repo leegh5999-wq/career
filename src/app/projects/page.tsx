@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { designScopeLabels, projectStatusLabels } from "@/lib/labels";
 import { formatDate } from "@/lib/format";
+import { chipCls } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -71,10 +72,7 @@ export default async function ProjectsPage() {
                 {p.designScopes.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {p.designScopes.map((s) => (
-                      <span
-                        key={s}
-                        className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600"
-                      >
+                      <span key={s} className={chipCls}>
                         {designScopeLabels[s]}
                       </span>
                     ))}
