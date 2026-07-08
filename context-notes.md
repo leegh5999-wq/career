@@ -46,3 +46,10 @@
 - **주의(자동화 테스트)**: 프리뷰 자동화의 버튼 click이 폼 제출을 못 일으키는 경우가 있음 — form.requestSubmit()이 신뢰됨.
 - **사용자 실사용 시작**: 프로덕션 DB에 사용자가 만든 "테스트" 프로젝트 3건 존재.
 - **다음 후보**: Phase 4(출력물) 먼저 or Phase 5(자격·기술등급) or Phase 3(AI, 키 필요). 사용자와 협의.
+
+## 2026-07-08 — Phase 4 완료 (출력물)
+- **범위 결정**: 이력서는 Phase 5 이후로 연기 — 자격·학력 데이터 없이는 반쪽짜리. 경력기술서 + 성과평가 자료에 집중.
+- **PDF 전략**: 라이브러리 없이 인쇄 최적화 페이지(@media print, Tailwind print: variant) + 브라우저 "PDF로 저장". 마크다운 다운로드 라우트 병행(career.md / review.md, RFC 5987 한글 파일명).
+- **구조**: Profile 모델(단일 행 id="main") + /settings 업서트. 마크다운 빌더·포맷 헬퍼는 src/lib/export.ts 공용 — 문서 형식 바꿀 땐 여기.
+- **주의(개발 환경)**: prisma migrate dev가 generate를 자동 실행하지 않음(Prisma 7). 스키마 변경 후 dev 서버가 구버전 클라이언트를 전역 싱글턴으로 캐시하므로 npx prisma generate + dev 서버 재시작 필요.
+- **프로필 데이터**: 이름을 "이경호"로 추정 입력(이메일 기반 추측) — 사용자가 /settings에서 확인·수정 필요.
