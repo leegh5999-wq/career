@@ -1,0 +1,99 @@
+// 경력 관리 앱의 데이터 모델 — 프로젝트(현장)·성과 로그·자격 이력을 정의하는 Prisma 스키마
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // 연결 URL은 prisma.config.ts(CLI용)와 src/lib/prisma.ts(런타임 어댑터)에서 지정
+}
+
+// 담당 설계범위 — 전기·통신 설계 분야 프리셋
+enum DesignScope {
+  SUBSTATION // 수변전
+  POWER_TRUNK // 간선·동력
+  LIGHTING // 조명
+  GROUNDING_LIGHTNING // 접지·피뢰
+  EMERGENCY_POWER // 예비전원
+  FIRE_ELECTRIC // 소방전기
+  PREMISES_COMM // 구내통신
+  BROADCAST_RECEPTION // 방송공동수신
+  ICT_FACILITY // 정보통신설비
+  SECURITY_CCTV // CCTV·방범
+}
+
+enum ProjectStatus {
+  IN_PROGRESS // 진행중
+  COMPLETED // 완료
+  ON_HOLD // 보류
+}
+
+// 성과 분류
+enum AchievementCategory {
+  COST_SAVING // 비용절감
+  SCHEDULE // 공기단축
+  QUALITY // 품질
+  SAFETY // 안전
+  TECH_IMPROVEMENT // 기술개선
+  OTHER // 기타
+}
+
+enum CertificationKind {
+  LICENSE // 자격증
+  EDUCATION // 교육 이수
+}
+
+// 프로젝트(현장) — 경력의 기록 단위. 협회 경력신고를 의식한 규정 지향 필드 포함
+model Project {
+  id             String        @id @default(cuid())
+  name           String // 프로젝트명
+  client         String? // 발주처
+  buildingUse    String? // 용도 (공동주택·오피스·플랜트 등)
+  grossFloorArea Float? // 연면적 (㎡)
+  powerCapacity  Float? // 수전용량 (kVA)
+  householdCount Int? // 세대수
+  scaleNote      String? // 기타 규모 메모
+  role           String? // 본인 역할·담당범위
+  company        String? // 소속사
+  startDate      DateTime? // 참여 시작일
+  endDate        DateTime? // 참여 종료일
+  status         ProjectStatus @default(IN_PROGRESS)
+  designScopes   DesignScope[] // 담당 설계범위 (다중)
+  scopeDetail    String? // 설계범위 상세
+  drawingCount   Int? // 도면 수량
+  calcTypes      String[] // 계산서 종류 (부하·전압강하·조도 등)
+  tools          String[] // 사용 툴 (AutoCAD·Revit 등)
+  achievements   Achievement[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// 성과 한 줄 로그 — 원문 메모를 남기고, AI 정리 문장(Phase 3)은 refinedText에 저장
+model Achievement {
+  id          String              @id @default(cuid())
+  projectId   String
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rawText     String // 원문 메모
+  refinedText String? // AI 정리 문장 (Phase 3에서 채움)
+  category    AchievementCategory @default(OTHER)
+  metricValue Float? // 정량 수치
+  metricUnit  String? // 단위 (%, 만원, 일 등)
+  occurredAt  DateTime            @default(now()) // 성과 발생일
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+// 자격·교육 이력 — 기술등급 산정과 공식 증빙에 사용
+model Certification {
+  id         String            @id @default(cuid())
+  name       String // 자격·교육명 (전기기사, 정보통신기사 등)
+  kind       CertificationKind @default(LICENSE)
+  issuer     String? // 발급기관
+  acquiredAt DateTime? // 취득·이수일
+  expiresAt  DateTime? // 만료일 (해당 시)
+  note       String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
