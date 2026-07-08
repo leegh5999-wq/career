@@ -31,3 +31,10 @@
 - **E2E 검증됨**: 프리뷰에서 등록→목록→상세→수정 실제 수행, DB 반영 확인. 주의 — 페이지 로드 직후 자동화 클릭은 하이드레이션 전이라 유실될 수 있음(첫 테스트에서 체크박스 유실 재현, 앱 버그 아님).
 - **테스트 데이터**: "행복도시 A-1블록 공동주택 신축공사" 1건이 DB에 남아 있음(예시용). 삭제는 UI에서 가능.
 - **다음**: Phase 2 성과 로그 (프로젝트 상세에 한 줄 기록 UI + 대시보드 최근 성과).
+
+## 2026-07-08 — 배포 (GitHub + Vercel)
+- **GitHub**: https://github.com/leegh5999-wq/career (main). Vercel GitHub 앱 미설치로 자동 배포 연결은 실패 — 배포는 CLI(npx vercel --prod)로 수행 중. 자동 배포 원하면 Vercel 대시보드에서 Git 연결 필요.
+- **Vercel**: 프로젝트 career (leegh5999-wqs-projects). 프로덕션 URL https://career-two-tau.vercel.app
+- **트러블슈팅(중요)**: PowerShell 파이프로 `vercel env add`에 값을 넣으면 맨 앞에 BOM(U+FEFF)이 붙는다. 이로 인해 배포 환경에서 pg 파서가 호스트를 "base"로 오파싱 → P1001. 해결책은 src/lib/prisma.ts의 sanitizeUrl()로 값 정화 + URL 직접 분해 후 명시적 필드로 PrismaPg에 전달. Vercel에 저장된 환경변수 4개는 여전히 BOM이 붙어 있으나 코드에서 정화하므로 동작함. 나중에 대시보드에서 재입력하면 깨끗해짐.
+- **환경변수**: DATABASE_URL·DIRECT_URL을 Production·Preview에 등록(Sensitive). .env는 .vercelignore로 배포 번들에서 제외.
+- **검증**: 배포 후 /projects 200 + DB 데이터 렌더 확인. 임시 진단 라우트(/api/diag)는 원인 확인 후 삭제 완료.
