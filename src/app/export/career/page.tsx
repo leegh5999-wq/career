@@ -7,6 +7,7 @@ import {
 } from "@/lib/labels";
 import {
   achievementLine,
+  certificationLine,
   periodText,
   scaleText,
 } from "@/lib/export";
@@ -15,11 +16,14 @@ import { PrintButton } from "@/components/print-button";
 export const dynamic = "force-dynamic";
 
 export default async function CareerExportPage() {
-  const [profile, projects] = await Promise.all([
+  const [profile, projects, certifications] = await Promise.all([
     prisma.profile.findUnique({ where: { id: "main" } }),
     prisma.project.findMany({
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
       include: { achievements: { orderBy: { occurredAt: "asc" } } },
+    }),
+    prisma.certification.findMany({
+      orderBy: [{ acquiredAt: "desc" }, { createdAt: "desc" }],
     }),
   ]);
 
@@ -65,6 +69,19 @@ export default async function CareerExportPage() {
             </Link>
             에서 이름·연락처를 입력하면 여기에 표시됩니다.
           </p>
+        )}
+
+        {certifications.length > 0 && (
+          <>
+            <h2 className="mt-8 border-b border-zinc-300 pb-1 text-lg font-semibold">
+              보유 자격·교육 ({certifications.length}건)
+            </h2>
+            <ul className="mt-3 list-disc pl-5 text-sm text-zinc-700">
+              {certifications.map((c) => (
+                <li key={c.id}>{certificationLine(c)}</li>
+              ))}
+            </ul>
+          </>
         )}
 
         <h2 className="mt-8 border-b border-zinc-300 pb-1 text-lg font-semibold">

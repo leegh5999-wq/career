@@ -5,15 +5,18 @@ import { buildCareerMarkdown } from "@/lib/export";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const [profile, projects] = await Promise.all([
+  const [profile, projects, certifications] = await Promise.all([
     prisma.profile.findUnique({ where: { id: "main" } }),
     prisma.project.findMany({
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
       include: { achievements: { orderBy: { occurredAt: "asc" } } },
     }),
+    prisma.certification.findMany({
+      orderBy: [{ acquiredAt: "desc" }, { createdAt: "desc" }],
+    }),
   ]);
 
-  const md = buildCareerMarkdown(profile, projects);
+  const md = buildCareerMarkdown(profile, projects, certifications);
   return new Response(md, {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",

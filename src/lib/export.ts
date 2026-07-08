@@ -1,11 +1,13 @@
 // 출력물(경력기술서·성과평가) 공용 포맷 헬퍼와 마크다운 빌더
 import type {
   Achievement,
+  Certification,
   Profile,
   Project,
 } from "@/generated/prisma/client";
 import {
   achievementCategoryLabels,
+  certificationKindLabels,
   designScopeLabels,
   projectStatusLabels,
 } from "./labels";
@@ -39,9 +41,21 @@ export function achievementLine(a: Achievement): string {
   return `${formatDate(a.occurredAt)} ${a.rawText}${metric}`;
 }
 
+export function certificationLine(c: Certification): string {
+  const detail = [
+    c.issuer,
+    c.acquiredAt && `취득 ${formatDate(c.acquiredAt)}`,
+    c.expiresAt && `만료 ${formatDate(c.expiresAt)}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return `${c.name}${detail ? ` (${detail})` : ""} [${certificationKindLabels[c.kind]}]`;
+}
+
 export function buildCareerMarkdown(
   profile: Profile | null,
   projects: ProjectWithAchievements[],
+  certifications: Certification[] = [],
 ): string {
   const lines: string[] = ["# 경력기술서", ""];
 
@@ -51,6 +65,12 @@ export function buildCareerMarkdown(
     const contacts = [profile.email, profile.phone].filter(Boolean).join(" · ");
     if (contacts) lines.push(contacts);
     if (profile.summary) lines.push("", profile.summary);
+    lines.push("");
+  }
+
+  if (certifications.length > 0) {
+    lines.push(`## 보유 자격·교육 (${certifications.length}건)`, "");
+    for (const c of certifications) lines.push(`- ${certificationLine(c)}`);
     lines.push("");
   }
 
