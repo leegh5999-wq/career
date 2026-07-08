@@ -25,8 +25,8 @@ export default function RootLayout({
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900">
         <header className="border-b border-zinc-200 bg-white print:hidden">
-          <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-3">
-            <Link href="/" className="font-semibold">
+          <nav className="mx-auto flex max-w-5xl items-center gap-5 overflow-x-auto px-6 py-3 whitespace-nowrap">
+            <Link href="/" className="shrink-0 font-semibold">
               경력 관리
             </Link>
             <div className="flex gap-4 text-sm text-zinc-600">
@@ -34,7 +34,7 @@ export default function RootLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="hover:text-zinc-900"
+                  className="shrink-0 py-1 hover:text-zinc-900"
                 >
                   {item.label}
                 </Link>
