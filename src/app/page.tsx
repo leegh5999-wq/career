@@ -13,7 +13,7 @@ export default async function Home() {
       select: { id: true, name: true, status: true },
     }),
     prisma.achievement.findMany({
-      orderBy: { occurredAt: "desc" },
+      orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
       take: 10,
       include: { project: { select: { id: true, name: true } } },
     }),

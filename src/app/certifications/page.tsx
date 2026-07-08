@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { CertificationKind } from "@/generated/prisma/enums";
 import { certificationKindLabels } from "@/lib/labels";
-import { formatDate } from "@/lib/format";
+import { formatDate, todayKstUtcMidnight } from "@/lib/format";
 import {
   formatDuration,
   intervalDays,
@@ -10,25 +10,36 @@ import {
   totalCareerDays,
 } from "@/lib/career";
 import { periodText } from "@/lib/export";
+import { inputCls } from "@/lib/ui";
 import { ConfirmButton } from "@/components/confirm-button";
+import { SubmitButton } from "@/components/submit-button";
 import { createCertification, deleteCertification } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const inputCls =
-  "rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none";
+const dateLabelCls = "flex flex-col gap-0.5 text-xs text-zinc-500";
 
 export default async function CertificationsPage() {
   const [certifications, projects] = await Promise.all([
     prisma.certification.findMany({
-      orderBy: [{ acquiredAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [
+        { acquiredAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
     }),
     prisma.project.findMany({
-      orderBy: [{ startDate: "asc" }],
+      orderBy: [{ startDate: { sort: "asc", nulls: "last" } }],
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+      },
     }),
   ]);
 
-  const today = new Date();
+  const today = todayKstUtcMidnight();
   const totalDays = totalCareerDays(projects, today);
   const projectRows = projects
     .map((p) => ({ p, interval: projectInterval(p, today) }))
@@ -52,9 +63,9 @@ export default async function CertificationsPage() {
         {projectRows.length > 0 && (
           <ul className="mt-3 divide-y divide-zinc-100 text-sm">
             {projectRows.map(({ p, interval }) => (
-              <li key={p.id} className="flex items-center justify-between py-1.5">
+              <li key={p.id} className="flex items-center justify-between gap-3 py-1.5">
                 <span className="text-zinc-700">{p.name}</span>
-                <span className="text-zinc-500">
+                <span className="shrink-0 text-zinc-500">
                   {periodText(p)} ·{" "}
                   {intervalDays(interval!.start, interval!.end).toLocaleString()}일
                 </span>
@@ -64,14 +75,15 @@ export default async function CertificationsPage() {
         )}
         <p className="mt-3 text-xs text-zinc-400">
           협회 경력신고·기술등급 산정 참고용 근사치입니다. 공식 인정 기간은 신고
-          기관 기준을 따릅니다.
+          기관 기준을 따릅니다. 종료일 없는 완료·보류 프로젝트는 합산에서
+          제외됩니다.
         </p>
       </section>
 
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-3 text-sm font-semibold">자격·교육 추가</h2>
-        <form action={createCertification} className="flex flex-wrap items-center gap-2">
-          <select name="kind" className={inputCls}>
+        <form action={createCertification} className="flex flex-wrap items-end gap-2">
+          <select name="kind" aria-label="구분" className={inputCls}>
             {Object.values(CertificationKind).map((k) => (
               <option key={k} value={k}>
                 {certificationKindLabels[k]}
@@ -81,18 +93,31 @@ export default async function CertificationsPage() {
           <input
             name="name"
             required
+            aria-label="자격·교육명"
             placeholder="전기기사, 정보통신기사 …"
             className={`${inputCls} min-w-48 flex-1`}
           />
-          <input name="issuer" placeholder="발급기관" className={`${inputCls} w-36`} />
-          <input type="date" name="acquiredAt" title="취득·이수일" className={inputCls} />
-          <input type="date" name="expiresAt" title="만료일(해당 시)" className={inputCls} />
-          <button
-            type="submit"
-            className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-zinc-700"
-          >
-            추가
-          </button>
+          <input
+            name="issuer"
+            aria-label="발급기관"
+            placeholder="발급기관"
+            className={`${inputCls} w-36`}
+          />
+          <label className={dateLabelCls}>
+            취득·이수일
+            <input type="date" name="acquiredAt" className={inputCls} />
+          </label>
+          <label className={dateLabelCls}>
+            만료일 (해당 시)
+            <input type="date" name="expiresAt" className={inputCls} />
+          </label>
+          <input
+            name="note"
+            aria-label="비고"
+            placeholder="비고"
+            className={`${inputCls} w-36`}
+          />
+          <SubmitButton>추가</SubmitButton>
         </form>
       </section>
 

@@ -3,9 +3,10 @@ import type { Project } from "@/generated/prisma/client";
 import { DesignScope, ProjectStatus } from "@/generated/prisma/enums";
 import { designScopeLabels, projectStatusLabels } from "@/lib/labels";
 import { toDateInput } from "@/lib/format";
+import { inputCls as baseInputCls } from "@/lib/ui";
+import { SubmitButton } from "@/components/submit-button";
 
-const inputCls =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none";
+const inputCls = `w-full ${baseInputCls}`;
 const labelCls = "block text-sm font-medium text-zinc-700";
 const sectionCls = "rounded-lg border border-zinc-200 bg-white p-5";
 const legendCls = "mb-3 text-sm font-semibold text-zinc-900";
@@ -218,12 +219,7 @@ export function ProjectForm({
       </section>
 
       <div>
-        <button
-          type="submit"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
-        >
-          {submitLabel}
-        </button>
+        <SubmitButton>{submitLabel}</SubmitButton>
       </div>
     </form>
   );

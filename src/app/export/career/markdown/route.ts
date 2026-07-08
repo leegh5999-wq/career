@@ -1,20 +1,10 @@
-// 경력기술서 마크다운 다운로드 라우트
-import { prisma } from "@/lib/prisma";
-import { buildCareerMarkdown } from "@/lib/export";
+// 경력기술서 마크다운 다운로드 라우트 — 인쇄 페이지와 동일한 데이터를 사용
+import { buildCareerMarkdown, getCareerData } from "@/lib/export";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const [profile, projects, certifications] = await Promise.all([
-    prisma.profile.findUnique({ where: { id: "main" } }),
-    prisma.project.findMany({
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      include: { achievements: { orderBy: { occurredAt: "asc" } } },
-    }),
-    prisma.certification.findMany({
-      orderBy: [{ acquiredAt: "desc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  const { profile, projects, certifications } = await getCareerData();
 
   const md = buildCareerMarkdown(profile, projects, certifications);
   return new Response(md, {

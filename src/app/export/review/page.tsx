@@ -1,18 +1,14 @@
 // 성과평가 자료 — 기간 내 성과를 프로젝트별로 모은 인쇄용 문서
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/format";
-import { achievementLine } from "@/lib/export";
+import {
+  achievementLine,
+  getReviewProjects,
+  parseReviewRange,
+} from "@/lib/export";
+import { btnSecondaryCls } from "@/lib/ui";
 import { PrintButton } from "@/components/print-button";
 
 export const dynamic = "force-dynamic";
-
-// "yyyy-MM-dd" → UTC Date. to는 그날 끝까지 포함
-function parseRange(from?: string, to?: string) {
-  const fromDate = from ? new Date(from) : new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1));
-  const toDate = to ? new Date(`${to}T23:59:59.999Z`) : new Date();
-  return { fromDate, toDate };
-}
 
 export default async function ReviewExportPage({
   searchParams,
@@ -20,23 +16,12 @@ export default async function ReviewExportPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { from, to } = await searchParams;
-  const { fromDate, toDate } = parseRange(from, to);
+  const { fromStr, toStr, fromDate, toDate } = parseReviewRange(from, to);
 
-  const projects = await prisma.project.findMany({
-    where: {
-      achievements: { some: { occurredAt: { gte: fromDate, lte: toDate } } },
-    },
-    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    include: {
-      achievements: {
-        where: { occurredAt: { gte: fromDate, lte: toDate } },
-        orderBy: { occurredAt: "asc" },
-      },
-    },
-  });
+  const projects = await getReviewProjects(fromDate, toDate);
   const total = projects.reduce((n, p) => n + p.achievements.length, 0);
 
-  const mdHref = `/export/review/markdown?from=${from ?? ""}&to=${to ?? ""}`;
+  const mdHref = `/export/review/markdown?from=${fromStr}&to=${toStr}`;
 
   return (
     <div>
@@ -45,10 +30,7 @@ export default async function ReviewExportPage({
           ← 출력
         </Link>
         <div className="flex gap-2">
-          <a
-            href={mdHref}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm hover:border-zinc-500"
-          >
+          <a href={mdHref} className={btnSecondaryCls}>
             마크다운 다운로드
           </a>
           <PrintButton />
@@ -58,8 +40,8 @@ export default async function ReviewExportPage({
       <article className="rounded-lg border border-zinc-200 bg-white p-8 print:border-0 print:p-0">
         <h1 className="text-2xl font-bold">성과 정리</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {formatDate(fromDate)} ~ {formatDate(toDate)} · 총 {total}건 /{" "}
-          {projects.length}개 프로젝트
+          {fromStr.replaceAll("-", ".")} ~ {toStr.replaceAll("-", ".")} · 총{" "}
+          {total}건 / {projects.length}개 프로젝트
         </p>
 
         {projects.length === 0 ? (

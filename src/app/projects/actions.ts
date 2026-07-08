@@ -1,8 +1,9 @@
 "use server";
-// 프로젝트 등록·수정·삭제 서버 액션 — 폼 데이터를 파싱해 Prisma로 반영
+// 프로젝트·성과 로그 등록·수정·삭제 서버 액션
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { date, enumOr, int, list, num, text } from "@/lib/form";
 import {
   AchievementCategory,
   DesignScope,
@@ -10,38 +11,14 @@ import {
 } from "@/generated/prisma/enums";
 
 function parseProjectForm(formData: FormData) {
-  const text = (key: string): string | null => {
-    const v = formData.get(key);
-    return typeof v === "string" && v.trim() ? v.trim() : null;
-  };
-  const num = (key: string): number | null => {
-    const v = text(key);
-    if (!v) return null;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  };
-  const int = (key: string): number | null => {
-    const n = num(key);
-    return n === null ? null : Math.trunc(n);
-  };
-  const date = (key: string): Date | null => {
-    const v = text(key);
-    return v ? new Date(v) : null;
-  };
-  const list = (key: string): string[] =>
-    text(key)
-      ?.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean) ?? [];
-
-  const name = text("name");
+  const name = text(formData, "name");
   if (!name) throw new Error("프로젝트명은 필수입니다.");
 
-  const statusValue = text("status");
-  const status =
-    statusValue && Object.hasOwn(ProjectStatus, statusValue)
-      ? (statusValue as ProjectStatus)
-      : ProjectStatus.IN_PROGRESS;
+  const startDate = date(formData, "startDate");
+  const endDate = date(formData, "endDate");
+  if (startDate && endDate && endDate < startDate) {
+    throw new Error("참여 종료일이 시작일보다 빠릅니다.");
+  }
 
   const designScopes = formData
     .getAll("designScopes")
@@ -52,22 +29,22 @@ function parseProjectForm(formData: FormData) {
 
   return {
     name,
-    client: text("client"),
-    buildingUse: text("buildingUse"),
-    grossFloorArea: num("grossFloorArea"),
-    powerCapacity: num("powerCapacity"),
-    householdCount: int("householdCount"),
-    scaleNote: text("scaleNote"),
-    role: text("role"),
-    company: text("company"),
-    startDate: date("startDate"),
-    endDate: date("endDate"),
-    status,
+    client: text(formData, "client"),
+    buildingUse: text(formData, "buildingUse"),
+    grossFloorArea: num(formData, "grossFloorArea"),
+    powerCapacity: num(formData, "powerCapacity"),
+    householdCount: int(formData, "householdCount"),
+    scaleNote: text(formData, "scaleNote"),
+    role: text(formData, "role"),
+    company: text(formData, "company"),
+    startDate,
+    endDate,
+    status: enumOr(ProjectStatus, text(formData, "status"), ProjectStatus.IN_PROGRESS),
     designScopes,
-    scopeDetail: text("scopeDetail"),
-    drawingCount: int("drawingCount"),
-    calcTypes: list("calcTypes"),
-    tools: list("tools"),
+    scopeDetail: text(formData, "scopeDetail"),
+    drawingCount: int(formData, "drawingCount"),
+    calcTypes: list(formData, "calcTypes"),
+    tools: list(formData, "tools"),
   };
 }
 
@@ -95,35 +72,24 @@ export async function deleteProject(id: string) {
 // --- 성과 로그 ---
 
 export async function createAchievement(formData: FormData) {
-  const text = (key: string): string | null => {
-    const v = formData.get(key);
-    return typeof v === "string" && v.trim() ? v.trim() : null;
-  };
-
-  const projectId = text("projectId");
-  const rawText = text("rawText");
+  const projectId = text(formData, "projectId");
+  const rawText = text(formData, "rawText");
   if (!projectId || !rawText) throw new Error("프로젝트와 내용은 필수입니다.");
 
-  const categoryValue = text("category");
-  const category =
-    categoryValue && Object.hasOwn(AchievementCategory, categoryValue)
-      ? (categoryValue as AchievementCategory)
-      : AchievementCategory.OTHER;
-
-  const metricRaw = text("metricValue");
-  const metricValue =
-    metricRaw && Number.isFinite(Number(metricRaw)) ? Number(metricRaw) : null;
-
-  const dateRaw = text("occurredAt");
+  const occurredAt = date(formData, "occurredAt");
 
   await prisma.achievement.create({
     data: {
       projectId,
       rawText,
-      category,
-      metricValue,
-      metricUnit: text("metricUnit"),
-      ...(dateRaw ? { occurredAt: new Date(dateRaw) } : {}),
+      category: enumOr(
+        AchievementCategory,
+        text(formData, "category"),
+        AchievementCategory.OTHER,
+      ),
+      metricValue: num(formData, "metricValue"),
+      metricUnit: text(formData, "metricUnit"),
+      ...(occurredAt ? { occurredAt } : {}),
     },
   });
   revalidatePath("/");

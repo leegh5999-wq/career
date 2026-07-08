@@ -26,7 +26,11 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const project = await prisma.project.findUnique({
     where: { id },
-    include: { achievements: { orderBy: { occurredAt: "desc" } } },
+    include: {
+      achievements: {
+        orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
+      },
+    },
   });
   if (!project) notFound();
 
@@ -115,7 +119,7 @@ export default async function ProjectDetailPage({
           <dl>
             <Row
               label="도면 수량"
-              value={project.drawingCount && `${project.drawingCount} 장`}
+              value={project.drawingCount != null && `${project.drawingCount} 장`}
             />
             <Row label="계산서" value={project.calcTypes.join(", ")} />
             <Row label="사용 툴" value={project.tools.join(", ")} />

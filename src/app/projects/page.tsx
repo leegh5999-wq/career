@@ -14,7 +14,20 @@ const statusBadgeCls = {
 
 export default async function ProjectsPage() {
   const projects = await prisma.project.findMany({
-    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+    orderBy: [
+      { startDate: { sort: "desc", nulls: "last" } },
+      { createdAt: "desc" },
+    ],
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      client: true,
+      buildingUse: true,
+      startDate: true,
+      endDate: true,
+      designScopes: true,
+    },
   });
 
   return (

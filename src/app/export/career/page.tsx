@@ -1,13 +1,15 @@
 // 경력기술서 — 인쇄(PDF 저장)에 최적화된 전체 프로젝트 경력 문서
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import {
   designScopeLabels,
   projectStatusLabels,
 } from "@/lib/labels";
 import {
   achievementLine,
+  basicsText,
   certificationLine,
+  getCareerData,
+  outputsText,
   periodText,
   scaleText,
 } from "@/lib/export";
@@ -16,16 +18,7 @@ import { PrintButton } from "@/components/print-button";
 export const dynamic = "force-dynamic";
 
 export default async function CareerExportPage() {
-  const [profile, projects, certifications] = await Promise.all([
-    prisma.profile.findUnique({ where: { id: "main" } }),
-    prisma.project.findMany({
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      include: { achievements: { orderBy: { occurredAt: "asc" } } },
-    }),
-    prisma.certification.findMany({
-      orderBy: [{ acquiredAt: "desc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  const { profile, projects, certifications } = await getCareerData();
 
   return (
     <div>
@@ -88,73 +81,61 @@ export default async function CareerExportPage() {
           프로젝트 경력 ({projects.length}건)
         </h2>
 
-        {projects.map((p) => (
-          <section key={p.id} className="mt-6 break-inside-avoid">
-            <h3 className="font-semibold">{p.name}</h3>
-            <dl className="mt-1.5 text-sm text-zinc-700">
-              <div className="flex gap-2">
-                <dt className="w-24 shrink-0 text-zinc-400">기간</dt>
-                <dd>
-                  {periodText(p)} ({projectStatusLabels[p.status]})
-                </dd>
-              </div>
-              {(p.client || p.buildingUse || p.company || p.role) && (
+        {projects.map((p) => {
+          const basics = basicsText(p);
+          const scale = scaleText(p);
+          const outputs = outputsText(p);
+          return (
+            <section key={p.id} className="mt-6 break-inside-avoid">
+              <h3 className="font-semibold">{p.name}</h3>
+              <dl className="mt-1.5 text-sm text-zinc-700">
                 <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-zinc-400">기본정보</dt>
+                  <dt className="w-24 shrink-0 text-zinc-400">기간</dt>
                   <dd>
-                    {[
-                      p.client && `발주처 ${p.client}`,
-                      p.buildingUse && `용도 ${p.buildingUse}`,
-                      p.company && `소속 ${p.company}`,
-                      p.role && `역할 ${p.role}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" / ")}
+                    {periodText(p)} ({projectStatusLabels[p.status]})
                   </dd>
                 </div>
-              )}
-              {scaleText(p) && (
-                <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-zinc-400">규모</dt>
-                  <dd>{scaleText(p)}</dd>
+                {basics && (
+                  <div className="flex gap-2">
+                    <dt className="w-24 shrink-0 text-zinc-400">기본정보</dt>
+                    <dd>{basics}</dd>
+                  </div>
+                )}
+                {scale && (
+                  <div className="flex gap-2">
+                    <dt className="w-24 shrink-0 text-zinc-400">규모</dt>
+                    <dd>{scale}</dd>
+                  </div>
+                )}
+                {p.designScopes.length > 0 && (
+                  <div className="flex gap-2">
+                    <dt className="w-24 shrink-0 text-zinc-400">설계범위</dt>
+                    <dd>
+                      {p.designScopes.map((s) => designScopeLabels[s]).join(", ")}
+                      {p.scopeDetail && ` — ${p.scopeDetail}`}
+                    </dd>
+                  </div>
+                )}
+                {outputs && (
+                  <div className="flex gap-2">
+                    <dt className="w-24 shrink-0 text-zinc-400">산출물</dt>
+                    <dd>{outputs}</dd>
+                  </div>
+                )}
+              </dl>
+              {p.achievements.length > 0 && (
+                <div className="mt-2 text-sm">
+                  <p className="font-medium text-zinc-800">주요 성과</p>
+                  <ul className="mt-1 list-disc pl-5 text-zinc-700">
+                    {p.achievements.map((a) => (
+                      <li key={a.id}>{achievementLine(a)}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
-              {p.designScopes.length > 0 && (
-                <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-zinc-400">설계범위</dt>
-                  <dd>
-                    {p.designScopes.map((s) => designScopeLabels[s]).join(", ")}
-                    {p.scopeDetail && ` — ${p.scopeDetail}`}
-                  </dd>
-                </div>
-              )}
-              {(p.drawingCount || p.calcTypes.length > 0 || p.tools.length > 0) && (
-                <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-zinc-400">산출물</dt>
-                  <dd>
-                    {[
-                      p.drawingCount && `도면 ${p.drawingCount}장`,
-                      p.calcTypes.length > 0 && `계산서: ${p.calcTypes.join(", ")}`,
-                      p.tools.length > 0 && `툴: ${p.tools.join(", ")}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </dd>
-                </div>
-              )}
-            </dl>
-            {p.achievements.length > 0 && (
-              <div className="mt-2 text-sm">
-                <p className="font-medium text-zinc-800">주요 성과</p>
-                <ul className="mt-1 list-disc pl-5 text-zinc-700">
-                  {p.achievements.map((a) => (
-                    <li key={a.id}>{achievementLine(a)}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-        ))}
+            </section>
+          );
+        })}
       </article>
     </div>
   );

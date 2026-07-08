@@ -1,11 +1,12 @@
 // 설정 — 출력물(경력기술서 등)에 들어갈 프로필 정보 관리
 import { prisma } from "@/lib/prisma";
+import { inputCls as baseInputCls } from "@/lib/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { upsertProfile } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const inputCls =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none";
+const inputCls = `w-full ${baseInputCls}`;
 const labelCls = "block text-sm font-medium text-zinc-700";
 
 export default async function SettingsPage() {
@@ -71,12 +72,7 @@ export default async function SettingsPage() {
             />
           </label>
           <div>
-            <button
-              type="submit"
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
-            >
-              저장
-            </button>
+            <SubmitButton>저장</SubmitButton>
           </div>
         </div>
       </form>
