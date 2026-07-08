@@ -38,3 +38,11 @@
 - **트러블슈팅(중요)**: PowerShell 파이프로 `vercel env add`에 값을 넣으면 맨 앞에 BOM(U+FEFF)이 붙는다. 이로 인해 배포 환경에서 pg 파서가 호스트를 "base"로 오파싱 → P1001. 해결책은 src/lib/prisma.ts의 sanitizeUrl()로 값 정화 + URL 직접 분해 후 명시적 필드로 PrismaPg에 전달. Vercel에 저장된 환경변수 4개는 여전히 BOM이 붙어 있으나 코드에서 정화하므로 동작함. 나중에 대시보드에서 재입력하면 깨끗해짐.
 - **환경변수**: DATABASE_URL·DIRECT_URL을 Production·Preview에 등록(Sensitive). .env는 .vercelignore로 배포 번들에서 제외.
 - **검증**: 배포 후 /projects 200 + DB 데이터 렌더 확인. 임시 진단 라우트(/api/diag)는 원인 확인 후 삭제 완료.
+
+## 2026-07-08 — Phase 2 완료 (성과 로그)
+- **구조**: createAchievement/deleteAchievement는 projects/actions.ts에 추가. 폼·목록은 src/components의 AchievementForm/AchievementList 공용 (projectId 고정 vs 프로젝트 select). 삭제 확인은 범용 ConfirmButton.
+- **UX 결정**: 기록 동선 최소화가 컨셉 핵심이라 대시보드에 "오늘의 성과 기록" 빠른 입력을 배치. 서버 액션은 redirect 없이 revalidate만 → React 19가 폼 자동 리셋. 분류 기본값은 OTHER(잘못된 분류 데이터 방지).
+- **E2E 검증**: 프리뷰에서 기록→대시보드·상세 표시→삭제 확인. 프로덕션 배포 후 대시보드 렌더 확인.
+- **주의(자동화 테스트)**: 프리뷰 자동화의 버튼 click이 폼 제출을 못 일으키는 경우가 있음 — form.requestSubmit()이 신뢰됨.
+- **사용자 실사용 시작**: 프로덕션 DB에 사용자가 만든 "테스트" 프로젝트 3건 존재.
+- **다음 후보**: Phase 4(출력물) 먼저 or Phase 5(자격·기술등급) or Phase 3(AI, 키 필요). 사용자와 협의.
