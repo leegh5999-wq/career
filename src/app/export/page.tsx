@@ -1,13 +1,14 @@
 // 출력 허브 — 경력기술서·성과평가 자료로 가는 입구
 import Link from "next/link";
-import { toDateInput } from "@/lib/format";
+import { todayKstInput } from "@/lib/format";
+import { inputCls } from "@/lib/ui";
 
-const inputCls =
-  "rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none";
+// 날짜 기본값이 빌드 시점에 동결되지 않도록 요청 시 렌더
+export const dynamic = "force-dynamic";
 
 export default function ExportPage() {
-  const now = new Date();
-  const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  const today = todayKstInput();
+  const yearStart = `${today.slice(0, 4)}-01-01`;
 
   return (
     <div>
@@ -46,7 +47,8 @@ export default function ExportPage() {
               type="date"
               name="from"
               required
-              defaultValue={toDateInput(yearStart)}
+              aria-label="시작일"
+              defaultValue={yearStart}
               className={inputCls}
             />
             <span className="text-sm text-zinc-400">~</span>
@@ -54,7 +56,8 @@ export default function ExportPage() {
               type="date"
               name="to"
               required
-              defaultValue={toDateInput(now)}
+              aria-label="종료일"
+              defaultValue={today}
               className={inputCls}
             />
             <button
