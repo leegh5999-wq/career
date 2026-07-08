@@ -83,6 +83,9 @@ model Achievement {
   occurredAt  DateTime            @default(now()) // 성과 발생일
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+
+  @@index([projectId, occurredAt])
+  @@index([occurredAt])
 }
 
 // 프로필 — 출력물(경력기술서 등) 상단에 들어갈 기본 정보. 단일 행("main")만 사용
