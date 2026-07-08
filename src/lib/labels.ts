@@ -1,5 +1,6 @@
 // Prisma enum 값을 화면 표시용 한글 라벨로 매핑
 import type {
+  AchievementCategory,
   DesignScope,
   ProjectStatus,
 } from "@/generated/prisma/enums";
@@ -21,4 +22,13 @@ export const projectStatusLabels: Record<ProjectStatus, string> = {
   IN_PROGRESS: "진행중",
   COMPLETED: "완료",
   ON_HOLD: "보류",
+};
+
+export const achievementCategoryLabels: Record<AchievementCategory, string> = {
+  COST_SAVING: "비용절감",
+  SCHEDULE: "공기단축",
+  QUALITY: "품질",
+  SAFETY: "안전",
+  TECH_IMPROVEMENT: "기술개선",
+  OTHER: "기타",
 };

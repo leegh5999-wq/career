@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { DesignScope, ProjectStatus } from "@/generated/prisma/enums";
+import {
+  AchievementCategory,
+  DesignScope,
+  ProjectStatus,
+} from "@/generated/prisma/enums";
 
 function parseProjectForm(formData: FormData) {
   const text = (key: string): string | null => {
@@ -86,4 +90,48 @@ export async function deleteProject(id: string) {
   await prisma.project.delete({ where: { id } });
   revalidatePath("/projects");
   redirect("/projects");
+}
+
+// --- 성과 로그 ---
+
+export async function createAchievement(formData: FormData) {
+  const text = (key: string): string | null => {
+    const v = formData.get(key);
+    return typeof v === "string" && v.trim() ? v.trim() : null;
+  };
+
+  const projectId = text("projectId");
+  const rawText = text("rawText");
+  if (!projectId || !rawText) throw new Error("프로젝트와 내용은 필수입니다.");
+
+  const categoryValue = text("category");
+  const category =
+    categoryValue && Object.hasOwn(AchievementCategory, categoryValue)
+      ? (categoryValue as AchievementCategory)
+      : AchievementCategory.OTHER;
+
+  const metricRaw = text("metricValue");
+  const metricValue =
+    metricRaw && Number.isFinite(Number(metricRaw)) ? Number(metricRaw) : null;
+
+  const dateRaw = text("occurredAt");
+
+  await prisma.achievement.create({
+    data: {
+      projectId,
+      rawText,
+      category,
+      metricValue,
+      metricUnit: text("metricUnit"),
+      ...(dateRaw ? { occurredAt: new Date(dateRaw) } : {}),
+    },
+  });
+  revalidatePath("/");
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function deleteAchievement(id: string) {
+  const deleted = await prisma.achievement.delete({ where: { id } });
+  revalidatePath("/");
+  revalidatePath(`/projects/${deleted.projectId}`);
 }

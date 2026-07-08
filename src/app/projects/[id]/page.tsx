@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { designScopeLabels, projectStatusLabels } from "@/lib/labels";
 import { formatDate } from "@/lib/format";
+import { AchievementForm } from "@/components/achievement-form";
+import { AchievementList } from "@/components/achievement-list";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,10 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = await prisma.project.findUnique({ where: { id } });
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: { achievements: { orderBy: { occurredAt: "desc" } } },
+  });
   if (!project) notFound();
 
   return (
@@ -118,11 +123,17 @@ export default async function ProjectDetailPage({
         </section>
       </div>
 
-      <section className="mt-4 rounded-lg border border-dashed border-zinc-300 p-5">
-        <h2 className="text-sm font-semibold">성과 로그</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Phase 2에서 이 프로젝트의 성과를 한 줄씩 기록할 수 있습니다.
-        </p>
+      <section className="mt-4 rounded-lg border border-zinc-200 bg-white p-5">
+        <h2 className="mb-3 text-sm font-semibold">
+          성과 로그
+          <span className="ml-2 font-normal text-zinc-400">
+            {project.achievements.length}건
+          </span>
+        </h2>
+        <AchievementForm projectId={project.id} />
+        <div className="mt-4">
+          <AchievementList achievements={project.achievements} canDelete />
+        </div>
       </section>
     </div>
   );
