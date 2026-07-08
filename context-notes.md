@@ -22,3 +22,12 @@
 - **데이터 모델**: Project(규정 지향 필드 + designScopes enum 배열) / Achievement(rawText 원문 보존, refinedText는 Phase 3용) / Certification. 규모 필드는 연면적·수전용량·세대수 + scaleNote로 단순화.
 - **폰트**: Geist 제거(한글 미지원) → 한글 친화 시스템 폰트 스택.
 - **다음 작업 전 필요**: 사용자가 Supabase 프로젝트 생성 후 .env에 DATABASE_URL(6543 풀러)·DIRECT_URL(5432) 입력 → npx prisma migrate dev로 첫 마이그레이션. 이후 Phase 1(프로젝트 CRUD) 착수.
+
+## 2026-07-08 — Phase 1 완료 (프로젝트 CRUD)
+- **DB 연결 완료**: 사용자가 Supabase(서울 리전) 생성, .env 입력. 첫 마이그레이션(init) 적용, 풀러(6543)·직접(5432) 연결 모두 확인.
+- **구조**: 서버 액션(src/app/projects/actions.ts) + 네이티브 폼. 클라이언트 컴포넌트는 삭제 확인 버튼 하나뿐. 등록·수정은 project-form.tsx 공용.
+- **enum 라벨**: 한글 라벨은 src/lib/labels.ts에 중앙화. enum import는 "@/generated/prisma/enums".
+- **목록·상세는 force-dynamic**: 데이터 앱이므로 프리렌더 대신 요청 시 렌더.
+- **E2E 검증됨**: 프리뷰에서 등록→목록→상세→수정 실제 수행, DB 반영 확인. 주의 — 페이지 로드 직후 자동화 클릭은 하이드레이션 전이라 유실될 수 있음(첫 테스트에서 체크박스 유실 재현, 앱 버그 아님).
+- **테스트 데이터**: "행복도시 A-1블록 공동주택 신축공사" 1건이 DB에 남아 있음(예시용). 삭제는 UI에서 가능.
+- **다음**: Phase 2 성과 로그 (프로젝트 상세에 한 줄 기록 UI + 대시보드 최근 성과).
