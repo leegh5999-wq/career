@@ -43,3 +43,6 @@ next-env.d.ts
 
 # prisma generated client
 /src/generated/prisma
+
+# claude harness artifacts
+.claude/scheduled_tasks.lock

@@ -60,3 +60,10 @@
 - **경력기술서 확장**: buildCareerMarkdown 3번째 인자로 certifications 추가. 보유 자격·교육 섹션이 프로필과 프로젝트 사이에 들어감.
 - **샘플 데이터**: 자격증 "전기기사(한국산업인력공단, 2020.05.15)" 1건 입력됨 — 사용자 확인·수정 필요.
 - **남은 것**: Phase 3(AI, API 키 대기), 이력서(자격 데이터 생겼으니 가능해짐 — 학력 필드 추가 검토 필요).
+
+## 2026-07-09 — 코드리뷰·디자인 리뷰 (xhigh) 및 보완
+- **프로세스**: 파인더 10각도 + 검증 + 스윕 멀티에이전트 리뷰. 최종 15건 확정(전부 CONFIRMED), 전건 수정 적용.
+- **핵심 수정**: (1) 비밀번호 보호 인증 — src/middleware.ts + /login, APP_PASSWORD env(로컬 .env + Vercel Production, 값은 .env 참조). 미설정 시 무보호 통과. (2) 다크모드 OS에서 글자 안 보임 — globals.css 스캐폴드 잔재 제거, 라이트 고정(color-scheme). (3) KST 시간대 정책 — todayKstInput/todayKstUtcMidnight(lib/format.ts), 성과 날짜 기본값·리뷰 기간·경력기간 today 전부 KST. (4) 경력기간 로직 — 완료·보류+종료일 없음 제외, 기간 역전 검증, 1년 12개월 경계. (5) 출력 문서 — 데이터 조회·기간 파싱·라인 빌더를 lib/export.ts로 일원화(페이지↔md 드리프트 방지). (6) 더블서밋·하이드레이션 전 confirm 우회 — SubmitButton/ConfirmButton(useFormStatus+useSyncExternalStore). (7) 성능 — vercel.json regions icn1(서울), Achievement 인덱스 2종, select 프로젝션, build에 migrate deploy.
+- **스킵(의도)**: force-dynamic 유지(개인 도구는 신선도 우선, icn1으로 충분), useActionState 필드 검증 UX(스코프 큼, error.tsx로 최소 커버), 본격 다크모드(라이트 고정 선택), Vercel 저장 env의 BOM 원본 정리(권한 제한 — prisma.config.ts·prisma.ts·middleware에서 코드 정화로 흡수, 대시보드에서 재입력하면 근본 해결).
+- **주의**: Turbopack 데브 캐시(.next)가 globals.css 수정을 낡은 규칙과 병합해 서빙한 사례 — CSS 대수술 후에는 .next 삭제 후 재시작.
+- **프리뷰 배포 무보호**: APP_PASSWORD는 Production에만 등록. `vercel`(프리뷰) 배포를 쓰게 되면 Preview 환경에도 등록 필요.
