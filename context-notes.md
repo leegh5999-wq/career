@@ -15,3 +15,10 @@
 
 ## 미확정 · 확인 필요
 - **협회 경력신고 양식**: 건설기술인 / 정보통신기술자 / 전기공사기술자 중 실제 어디에 신고하는지에 따라 규정 필드 상세가 달라질 수 있음. 개발 착수 전 사용자 실제 워크플로 확인 필요.
+
+## 2026-07-08 — Phase 0 완료
+- **스캐폴딩**: create-next-app 16.2.10 (TS·Tailwind 4·App Router·src 디렉터리·npm). 루트에 기존 파일이 있어 임시 하위 폴더에 생성 후 루트로 이동. create-next-app이 만든 AGENTS.md/CLAUDE.md는 그대로 둠.
+- **Prisma 7 대응(중요)**: npm이 Prisma 7.8을 설치했고, v7부터 datasource url/directUrl을 스키마에 못 쓴다. 연결 URL은 prisma.config.ts(CLI·마이그레이션용, DIRECT_URL) + src/lib/prisma.ts의 @prisma/adapter-pg(런타임, DATABASE_URL)로 분리. 생성 클라이언트는 src/generated/prisma (gitignore, postinstall로 재생성). import는 "@/generated/prisma/client".
+- **데이터 모델**: Project(규정 지향 필드 + designScopes enum 배열) / Achievement(rawText 원문 보존, refinedText는 Phase 3용) / Certification. 규모 필드는 연면적·수전용량·세대수 + scaleNote로 단순화.
+- **폰트**: Geist 제거(한글 미지원) → 한글 친화 시스템 폰트 스택.
+- **다음 작업 전 필요**: 사용자가 Supabase 프로젝트 생성 후 .env에 DATABASE_URL(6543 풀러)·DIRECT_URL(5432) 입력 → npx prisma migrate dev로 첫 마이그레이션. 이후 Phase 1(프로젝트 CRUD) 착수.

@@ -2,10 +2,10 @@
 
 ## Phase 0 — 기반 셋업
 - [x] 기술 스택 확정 → 클라우드 (Next.js + Supabase + Prisma + Vercel)
-- [ ] Next.js + TS + Tailwind 프로젝트 생성
-- [ ] DB 연결 (Prisma + Postgres 또는 SQLite)
-- [ ] 데이터 모델 스키마 작성 (Project / Achievement / Certification)
-- [ ] 기본 레이아웃·네비게이션
+- [x] Next.js + TS + Tailwind 프로젝트 생성 (Next 16.2, Turbopack)
+- [x] Prisma 7 셋업 (pg 어댑터·prisma.config.ts) — 실제 Supabase 연결·마이그레이션은 URL 입력 대기
+- [x] 데이터 모델 스키마 작성 (Project / Achievement / Certification)
+- [x] 기본 레이아웃·네비게이션
 
 ## Phase 1 — 프로젝트 경력 관리 (핵심)
 - [ ] 프로젝트 등록 폼 (기본정보 + 담당 설계범위 체크)
