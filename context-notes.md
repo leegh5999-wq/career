@@ -67,3 +67,8 @@
 - **스킵(의도)**: force-dynamic 유지(개인 도구는 신선도 우선, icn1으로 충분), useActionState 필드 검증 UX(스코프 큼, error.tsx로 최소 커버), 본격 다크모드(라이트 고정 선택), Vercel 저장 env의 BOM 원본 정리(권한 제한 — prisma.config.ts·prisma.ts·middleware에서 코드 정화로 흡수, 대시보드에서 재입력하면 근본 해결).
 - **주의**: Turbopack 데브 캐시(.next)가 globals.css 수정을 낡은 규칙과 병합해 서빙한 사례 — CSS 대수술 후에는 .next 삭제 후 재시작.
 - **프리뷰 배포 무보호**: APP_PASSWORD는 Production에만 등록. `vercel`(프리뷰) 배포를 쓰게 되면 Preview 환경에도 등록 필요.
+
+## 2026-07-09 — claude.ai/design 연동
+- 사용자가 로컬에 Claude Code CLI 설치 + /design-login 인증 완료.
+- 디자인 시스템 프로젝트 "Career Management App Design System" (projectId d6d34577-1c0e-4317-bdfd-44a77037965d) 생성, 카드 9개 업로드: Foundations(컬러·타이포) / Components(버튼·폼·배지·카드) / Screens(로그인·대시보드·경력기술서 문서).
+- 카드 HTML 원본은 세션 스크래치패드에만 존재 — 갱신 시 앱 소스(src/lib/ui.ts·labels.ts)에서 다시 추출해 DesignSync write_files로 반영. 디자인 값이 바뀌면 카드도 함께 갱신할 것.
